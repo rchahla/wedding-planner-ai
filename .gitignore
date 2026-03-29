@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+venv/
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Chroma DB (ignore contents, keep folder)
+data/chroma_db/*
+!data/chroma_db/.gitkeep
+
+# Outputs
+outputs/*
+!outputs/.gitkeep
