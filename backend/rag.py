@@ -29,17 +29,20 @@ def load_documents():
 
 def ingest_documents():
     existing = collection.get()
-    if existing["ids"]:
-        return
+    existing_ids = set(existing["ids"]) if existing["ids"] else set()
 
     docs = load_documents()
     if not docs:
         return
 
-    ids = [doc["id"] for doc in docs]
-    texts = [doc["text"] for doc in docs]
+    new_docs = [doc for doc in docs if doc["id"] not in existing_ids]
+    if not new_docs:
+        return
+
+    ids = [doc["id"] for doc in new_docs]
+    texts = [doc["text"] for doc in new_docs]
     embeddings = model.encode(texts).tolist()
-    metadatas = [{"source": doc["source"]} for doc in docs]
+    metadatas = [{"source": doc["source"]} for doc in new_docs]
 
     collection.add(
         ids=ids,

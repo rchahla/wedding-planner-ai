@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wedding Planner AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Georgia, serif;
+      background: #fdf8f4;
+      color: #333;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      color: #7a4f3a;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #999;
+      font-size: 0.95rem;
+      margin-bottom: 36px;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    form {
+      background: #fff;
+      border: 1px solid #e8ddd5;
+      border-radius: 10px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #7a4f3a;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input, select {
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      background: #fdf8f4;
+      color: #333;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #7a4f3a;
+    }
+
+    .checkbox-row {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #7a4f3a;
+    }
+
+    button {
+      grid-column: 1 / -1;
+      padding: 12px;
+      background: #7a4f3a;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    button:hover { background: #5e3b2a; }
+    button:disabled { background: #bbb; cursor: not-allowed; }
+
+    #output {
+      background: #fff;
+      border: 1px solid #e8ddd5;
+      border-radius: 10px;
+      padding: 32px;
+      display: none;
+    }
+
+    #output.conflict {
+      border-left: 4px solid #e07b39;
+    }
+
+    #output.success {
+      border-left: 4px solid #6aaa64;
+    }
+
+    #output h1 { font-size: 1.5rem; margin-bottom: 16px; }
+    #output h2 { font-size: 1.1rem; margin: 20px 0 8px; color: #7a4f3a; }
+    #output h3 { font-size: 1rem; margin: 14px 0 6px; }
+    #output p  { line-height: 1.7; margin-bottom: 10px; }
+    #output ul, #output ol { padding-left: 20px; margin-bottom: 10px; }
+    #output li { line-height: 1.7; margin-bottom: 4px; }
+    #output strong { color: #5e3b2a; }
+    #output em { color: #888; font-size: 0.9rem; }
+    #output hr { border: none; border-top: 1px solid #e8ddd5; margin: 20px 0; }
+
+    .spinner {
+      text-align: center;
+      color: #999;
+      padding: 24px;
+      display: none;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Wedding Planner AI</h1>
+    <p class="subtitle">Enter your event details to generate a personalised planning report.</p>
+
+    <form id="planForm">
+      <div class="form-grid">
+
+        <div class="field">
+          <label for="guests">Guest Count</label>
+          <input type="number" id="guests" name="guests" placeholder="e.g. 90" min="1" required />
+        </div>
+
+        <div class="field">
+          <label for="budget">Budget ($)</label>
+          <input type="number" id="budget" name="budget" placeholder="e.g. 12000" min="0" required />
+        </div>
+
+        <div class="field">
+          <label for="theme">Theme</label>
+          <input type="text" id="theme" name="theme" placeholder="e.g. Rustic, Garden, Modern" />
+        </div>
+
+        <div class="field">
+          <label for="date">Event Date</label>
+          <input type="date" id="date" name="date" />
+        </div>
+
+        <div class="field">
+          <label for="venue_type">Venue Type</label>
+          <select id="venue_type" name="venue_type">
+            <option value="">-- Select --</option>
+            <option value="indoor">Indoor</option>
+            <option value="outdoor">Outdoor</option>
+            <option value="hybrid">Hybrid (Indoor + Outdoor)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="dietary">Dietary Requirements</label>
+          <input type="text" id="dietary" name="dietary" placeholder="e.g. Vegetarian, Vegan, Halal" />
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="acknowledged" name="acknowledged" />
+          <label for="acknowledged" style="text-transform:none; letter-spacing:0; font-weight:normal; color:#666;">
+            I have reviewed any conflicts and want to proceed with the current inputs
+          </label>
+        </div>
+
+        <button type="submit" id="submitBtn">Generate Plan</button>
+      </div>
+    </form>
+
+    <div class="spinner" id="spinner">Generating your wedding plan...</div>
+    <div id="output"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('planForm');
+    const output = document.getElementById('output');
+    const spinner = document.getElementById('spinner');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const params = new URLSearchParams({
+        guests:      document.getElementById('guests').value,
+        budget:      document.getElementById('budget').value,
+        theme:       document.getElementById('theme').value,
+        date:        document.getElementById('date').value,
+        venue_type:  document.getElementById('venue_type').value,
+        dietary:     document.getElementById('dietary').value,
+        acknowledged: document.getElementById('acknowledged').checked ? 'true' : 'false'
+      });
+
+      output.style.display = 'none';
+      output.className = '';
+      spinner.style.display = 'block';
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(`/plan?${params}`);
+        const data = await res.json();
+
+        spinner.style.display = 'none';
+        submitBtn.disabled = false;
+        output.style.display = 'block';
+        output.innerHTML = marked.parse(data.report);
+
+        if (data.has_conflicts) {
+          output.classList.add('conflict');
+        } else {
+          output.classList.add('success');
+        }
+
+        output.scrollIntoView({ behavior: 'smooth' });
+      } catch (err) {
+        spinner.style.display = 'none';
+        submitBtn.disabled = false;
+        output.style.display = 'block';
+        output.textContent = 'Something went wrong. Check the Flask console.';
+      }
+    });
+  </script>
+</body>
+</html>

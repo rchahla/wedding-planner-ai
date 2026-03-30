@@ -1,4 +1,8 @@
 {
-  "guest_count": 100,
-  "budget": 5000
+  "guest_count": 90,
+  "budget": 12000,
+  "theme": "Rustic",
+  "date": "2026-12-31",
+  "venue_type": "indoor",
+  "dietary": "Halal"
 }
