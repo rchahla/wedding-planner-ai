@@ -41,7 +41,7 @@ wedding-planner-ai/
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/rchahla/wedding-planner-ai.git
 cd wedding-planner-ai
 ```
 
@@ -53,7 +53,7 @@ python -m venv venv
 
 **Windows:**
 ```bash
-venv\Scriptsctivate
+venv\Scripts\activate
 ```
 
 **Mac/Linux:**
