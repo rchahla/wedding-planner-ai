@@ -41,7 +41,7 @@ wedding-planner-ai/
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/rchahla/wedding-planner-ai.git
 cd wedding-planner-ai
 ```
 
@@ -53,7 +53,7 @@ python -m venv venv
 
 **Windows:**
 ```bash
-venv\Scriptsctivate
+venv\Scripts\activate
 ```
 
 **Mac/Linux:**
@@ -64,7 +64,7 @@ source venv/bin/activate
 ### 3. Install dependencies
 
 ```bash
-pip install flask==3.1.3 chromadb==1.5.5 sentence-transformers==5.3.0 google-genai==1.69.0 python-dotenv==1.2.2
+pip install -r requirements.txt
 ```
 
 ### 4. Create your .env file
