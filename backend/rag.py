@@ -2,8 +2,9 @@ import os
 from chromadb import PersistentClient
 from sentence_transformers import SentenceTransformer
 
-DOCS_FOLDER = "data/source_docs"
-CHROMA_PATH = "data/chroma_db"
+_BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+DOCS_FOLDER = os.path.join(_BASE, "data", "source_docs")
+CHROMA_PATH = os.path.join(_BASE, "data", "chroma_db")
 COLLECTION_NAME = "wedding_docs"
 
 model = SentenceTransformer("all-MiniLM-L6-v2")

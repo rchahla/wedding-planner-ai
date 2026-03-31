@@ -1,60 +1,103 @@
 from state import update_state
 from rag import ingest_documents, retrieve_relevant_docs
-from artifact_generator import generate_markdown_report
+from artifact_generator import generate_markdown_report, generate_with_gemini
 
 
-def detect_conflicts(state):
+def detect_conflicts_llm(state, retrieved_docs):
     """
-    Step 3: Check state against known constraints and retrieved document guidance.
-    Returns a list of conflict strings. Empty list means no conflicts.
+    Step 3: Use Gemini to reason over retrieved documents against the event state
+    and identify conflicts. Returns a list of conflict strings.
+    Falls back to rule-based checks if the LLM call fails.
     """
-    conflicts = []
-
     guest_count = state.get("guest_count", 0)
     budget = state.get("budget", 0)
     venue_type = state.get("venue_type", "")
     dietary = state.get("dietary", "")
     date = state.get("date", "")
 
-    # Conflict 1: budget too low for guest count (grounded in budget_guide.txt)
+    context_block = "\n\n".join(
+        f"[Source: {doc['source']}]\n{doc['text']}" for doc in retrieved_docs
+    )
+
+    prompt = f"""You are a wedding planning advisor. Review the event details below against the retrieved planning documents and identify any conflicts, risks, or constraint violations.
+
+## Event Details
+- Guest Count: {guest_count}
+- Budget: ${budget}
+- Theme: {state.get("theme", "Not provided")}
+- Event Date: {date if date else "Not provided"}
+- Venue Type: {venue_type if venue_type else "Not provided"}
+- Dietary Requirements: {dietary if dietary else "None specified"}
+
+## Retrieved Planning Documents
+{context_block}
+
+## Task
+Identify up to 4 specific conflicts or risks where the event details conflict with the guidance in the retrieved documents (e.g., budget too low for guest count per the budget guide, outdoor seasonal risk per the outdoor guide, catering per-head too low for dietary needs per the catering guide).
+
+For each conflict found, write one short paragraph that:
+1. Names the conflict clearly
+2. References the specific source document it comes from (e.g., "According to budget_guide.txt...")
+3. States the specific numbers involved
+4. Asks a focused clarifying question
+
+If there are NO conflicts, respond with exactly: NO_CONFLICTS
+
+Respond ONLY with the conflict paragraphs (one per line, separated by blank lines) or NO_CONFLICTS. No headers, no numbering, no extra commentary."""
+
+    llm_response = generate_with_gemini(prompt)
+
+    if not llm_response or llm_response.startswith("Error"):
+        return _fallback_rule_conflicts(state)
+
+    llm_response = llm_response.strip()
+    if llm_response == "NO_CONFLICTS":
+        return []
+
+    conflicts = [p.strip() for p in llm_response.split("\n\n") if p.strip()]
+    return conflicts
+
+
+def _fallback_rule_conflicts(state):
+    """Hardcoded rule-based fallback if the LLM is unavailable."""
+    conflicts = []
+    guest_count = state.get("guest_count", 0)
+    budget = state.get("budget", 0)
+    venue_type = state.get("venue_type", "")
+    dietary = state.get("dietary", "")
+    date = state.get("date", "")
+
     if guest_count > 80 and budget < 8000:
         conflicts.append(
             f"Budget conflict: Your budget is ${budget} for {guest_count} guests. "
-            "Retrieved guidance indicates a minimum of $8,000 to $15,000 is typical for 80+ guests. "
+            "According to budget_guide.txt, a minimum of $8,000 to $15,000 is typical for 80+ guests. "
             "Would you like to increase your budget or reduce the guest count?"
         )
-
-    # Conflict 2: outdoor venue with no weather backup mentioned
     if "outdoor" in venue_type.lower() and not date:
         conflicts.append(
             "Outdoor venue risk: You selected an outdoor venue but did not provide an event date. "
-            "Seasonal weather risks cannot be assessed without a date. "
+            "According to outdoor_guide.txt, seasonal weather risks cannot be assessed without a date. "
             "Please provide your event date so weather and backup planning can be evaluated."
         )
-
-    # Conflict 3: outdoor venue in a risky month (grounded in outdoor_guide.txt)
     if "outdoor" in venue_type.lower() and date:
         try:
             month = int(date.split("-")[1])
             if month in [11, 12, 1, 2]:
                 conflicts.append(
                     f"Seasonal risk: Your outdoor event is in month {month}, which falls in a cold or winter period. "
-                    "Retrieved guidance recommends weather backup planning such as tent rentals and covered seating. "
+                    "According to outdoor_guide.txt, weather backup planning such as tent rentals and covered seating is recommended. "
                     "Do you have a backup indoor option or tent rental arranged?"
                 )
         except (IndexError, ValueError):
             pass
-
-    # Conflict 4: dietary restrictions with no catering note
     if dietary and budget > 0 and guest_count > 0:
         per_head = budget / guest_count if guest_count else 0
         if per_head < 50:
             conflicts.append(
                 f"Catering risk: Your per-head budget is approximately ${per_head:.0f}. "
-                f"Accommodating dietary requirements ({dietary}) typically requires more flexible and higher-cost catering. "
+                f"According to catering_guide.txt, accommodating dietary requirements ({dietary}) typically requires higher-cost catering. "
                 "Consider allocating more budget to catering or confirming your caterer can meet these needs."
             )
-
     return conflicts
 
 
@@ -87,9 +130,9 @@ def run_workflow(user_input):
     query = " ".join(query_parts)
     retrieved_docs = retrieve_relevant_docs(query, top_k=3)
 
-    # Step 3: Detect conflicts against retrieved guidance
-    print("[Step 3] Checking for conflicts against retrieved guidance...")
-    conflicts = detect_conflicts(state)
+    # Step 3: Detect conflicts against retrieved guidance using LLM + RAG
+    print("[Step 3] Checking for conflicts against retrieved guidance (LLM-grounded)...")
+    conflicts = detect_conflicts_llm(state, retrieved_docs)
 
     # Step 4: Branch — if conflicts exist and not yet acknowledged, return clarification
     if conflicts and not acknowledged:

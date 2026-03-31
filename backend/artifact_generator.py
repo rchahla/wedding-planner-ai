@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-OUTPUT_FILE = "outputs/wedding_report.md"
+_BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+OUTPUT_FILE = os.path.join(_BASE, "outputs", "wedding_report.md")
 
 
 def build_prompt(state, retrieved_docs, conflict_summary):
@@ -112,7 +113,7 @@ def generate_markdown_report(state, retrieved_docs, conflict_summary):
     else:
         report = fallback_report(state, retrieved_docs, conflict_summary)
 
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs(os.path.join(_BASE, "outputs"), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write(report)
 

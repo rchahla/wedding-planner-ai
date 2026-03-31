@@ -1,7 +1,8 @@
 import json
 import os
 
-STATE_FILE = "data/event_state.json"
+_BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+STATE_FILE = os.path.join(_BASE, "data", "event_state.json")
 
 def load_state():
     if not os.path.exists(STATE_FILE):
@@ -17,7 +18,7 @@ def load_state():
         return {}
 
 def save_state(state):
-    os.makedirs("data", exist_ok=True)
+    os.makedirs(os.path.join(_BASE, "data"), exist_ok=True)
     with open(STATE_FILE, "w", encoding="utf-8") as f:
         json.dump(state, f, indent=2)
 
