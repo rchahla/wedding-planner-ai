@@ -113,7 +113,11 @@ def generate_markdown_report(state, retrieved_docs, conflict_summary):
     else:
         report = fallback_report(state, retrieved_docs, conflict_summary)
 
+<<<<<<< HEAD
     os.makedirs(os.path.join(BASE_DIR, "outputs"), exist_ok=True)
+=======
+    os.makedirs(os.path.join(_BASE, "outputs"), exist_ok=True)
+>>>>>>> 1ebea435b5984448418a15614668ae2a9ca3736e
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write(report)
 
