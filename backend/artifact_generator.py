@@ -109,15 +109,15 @@ def generate_markdown_report(state, retrieved_docs, conflict_summary):
     report_body = generate_with_gemini(prompt)
 
     if report_body:
+        # Strip leading title if Gemini already included it
+        stripped = report_body.lstrip()
+        if stripped.lower().startswith("# wedding planning report"):
+            report_body = stripped[stripped.index("\n"):].lstrip()
         report = f"# Wedding Planning Report\n\n{report_body}"
     else:
         report = fallback_report(state, retrieved_docs, conflict_summary)
 
-<<<<<<< HEAD
     os.makedirs(os.path.join(BASE_DIR, "outputs"), exist_ok=True)
-=======
-    os.makedirs(os.path.join(_BASE, "outputs"), exist_ok=True)
->>>>>>> 1ebea435b5984448418a15614668ae2a9ca3736e
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write(report)
 

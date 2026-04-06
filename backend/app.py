@@ -16,13 +16,14 @@ def plan():
         "date":        request.args.get("date", ""),
         "venue_type":  request.args.get("venue_type", ""),
         "dietary":     request.args.get("dietary", ""),
+        "email":       request.args.get("email", ""),
         "acknowledged": request.args.get("acknowledged", "false").lower() == "true"
     }
 
-    result = run_workflow(user_input)
+    result, emailed = run_workflow(user_input)
 
     has_conflicts = result.startswith("# Action Required")
-    return jsonify({"report": result, "has_conflicts": has_conflicts})
+    return jsonify({"report": result, "has_conflicts": has_conflicts, "emailed": emailed})
 
 if __name__ == "__main__":
     app.run(debug=True)
