@@ -5,48 +5,142 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Wedding Planner AI</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:       #7a4f3a;
+      --brand-dark:  #5e3b2a;
+      --brand-light: #f5ede8;
+      --accent:      #c9856a;
+      --success:     #2d9c6e;
+      --success-bg:  #edfaf4;
+      --warning:     #d4780a;
+      --warning-bg:  #fff8ed;
+      --error:       #c0392b;
+      --surface:     #ffffff;
+      --bg:          #f8f4f1;
+      --border:      #e8ddd5;
+      --text:        #1a1a1a;
+      --text-2:      #5a5a5a;
+      --text-3:      #9a9a9a;
+      --radius:      12px;
+      --radius-sm:   8px;
+      --shadow:      0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+      --shadow-lg:   0 8px 32px rgba(0,0,0,.10);
+    }
+
+    html { scroll-behavior: smooth; }
 
     body {
-      font-family: Georgia, serif;
-      background: #fdf8f4;
-      color: #333;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      padding: 40px 20px;
+      padding: 0 0 80px;
     }
 
-    h1 {
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    .logo-mark {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--accent) 100%);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 16px; flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    .header-badge {
+      margin-left: auto;
+      background: var(--brand-light);
+      color: var(--brand);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* ── HERO ── */
+    .hero {
       text-align: center;
-      font-size: 2rem;
-      color: #7a4f3a;
-      margin-bottom: 8px;
+      padding: 56px 24px 40px;
     }
 
-    .subtitle {
-      text-align: center;
-      color: #999;
-      font-size: 0.95rem;
-      margin-bottom: 36px;
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--brand);
+      line-height: 1.2;
+      margin-bottom: 12px;
     }
 
-    .container {
-      max-width: 720px;
+    .hero p {
+      color: var(--text-2);
+      font-size: 1.05rem;
+      max-width: 480px;
       margin: 0 auto;
+      line-height: 1.6;
     }
 
-    form {
-      background: #fff;
-      border: 1px solid #e8ddd5;
-      border-radius: 10px;
-      padding: 32px;
-      margin-bottom: 32px;
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    /* ── FORM ── */
+    .form-card {
+      padding: 36px;
+      margin-bottom: 28px;
+    }
+
+    .form-section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
     }
 
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 18px;
     }
 
     .field {
@@ -55,213 +149,520 @@
       gap: 6px;
     }
 
-    .field.full-width {
-      grid-column: 1 / -1;
-    }
+    .field.full-width { grid-column: 1 / -1; }
 
     label {
-      font-size: 0.85rem;
-      font-weight: bold;
-      color: #7a4f3a;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-2);
+      letter-spacing: 0.02em;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      pointer-events: none;
+      opacity: 0.5;
     }
 
     input, select {
-      padding: 10px 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      background: #fdf8f4;
-      color: #333;
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.92rem;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color .15s, box-shadow .15s, background .15s;
+      appearance: none;
     }
+
+    input[type="date"] { padding-left: 36px; }
+    input[type="email"] { padding-left: 36px; }
+    input[type="number"] { padding-left: 36px; }
 
     input:focus, select:focus {
       outline: none;
-      border-color: #7a4f3a;
+      border-color: var(--brand);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px rgba(122,79,58,.1);
     }
 
+    input::placeholder { color: var(--text-3); }
+
+    .divider {
+      grid-column: 1 / -1;
+      height: 1px;
+      background: var(--border);
+      margin: 6px 0;
+    }
+
+    /* checkbox */
     .checkbox-row {
       grid-column: 1 / -1;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 10px;
-      font-size: 0.9rem;
-      color: #666;
-      margin-top: 4px;
+      background: var(--brand-light);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
     }
 
     .checkbox-row input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      accent-color: #7a4f3a;
+      width: 16px; height: 16px;
+      margin-top: 2px;
+      accent-color: var(--brand);
+      flex-shrink: 0;
+      padding: 0;
     }
 
-    button {
+    .checkbox-row label {
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: var(--brand-dark);
+      letter-spacing: 0;
+      cursor: pointer;
+      line-height: 1.5;
+    }
+
+    /* submit button */
+    .btn-primary {
       grid-column: 1 / -1;
-      padding: 12px;
-      background: #7a4f3a;
+      padding: 13px 24px;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--accent) 100%);
       color: white;
       border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-
-    button:hover { background: #5e3b2a; }
-    button:disabled { background: #bbb; cursor: not-allowed; }
-
-    #output {
-      background: #fff;
-      border: 1px solid #e8ddd5;
-      border-radius: 10px;
-      padding: 32px;
-      display: none;
-    }
-
-    #output.conflict {
-      border-left: 4px solid #e07b39;
-    }
-
-    #output.success {
-      border-left: 4px solid #6aaa64;
-    }
-
-    #output h1 { font-size: 1.5rem; margin-bottom: 16px; }
-    #output h2 { font-size: 1.1rem; margin: 20px 0 8px; color: #7a4f3a; }
-    #output h3 { font-size: 1rem; margin: 14px 0 6px; }
-    #output p  { line-height: 1.7; margin-bottom: 10px; }
-    #output ul, #output ol { padding-left: 20px; margin-bottom: 10px; }
-    #output li { line-height: 1.7; margin-bottom: 4px; }
-    #output strong { color: #5e3b2a; }
-    #output em { color: #888; font-size: 0.9rem; }
-    #output hr { border: none; border-top: 1px solid #e8ddd5; margin: 20px 0; }
-
-    .spinner {
-      text-align: center;
-      color: #999;
-      padding: 24px;
-      display: none;
+      border-radius: var(--radius-sm);
       font-size: 0.95rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s, box-shadow .15s;
+      box-shadow: 0 2px 8px rgba(122,79,58,.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      opacity: .92;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(122,79,58,.35);
+    }
+
+    .btn-primary:active:not(:disabled) { transform: translateY(0); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    /* ── SKELETON LOADER ── */
+    #skeleton {
+      display: none;
+      padding: 32px 36px;
+      margin-bottom: 28px;
+    }
+
+    .skeleton-line {
+      height: 14px;
+      background: linear-gradient(90deg, #ede8e4 25%, #f5f0ec 50%, #ede8e4 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    .skeleton-line.w-60 { width: 60%; }
+    .skeleton-line.w-80 { width: 80%; }
+    .skeleton-line.w-40 { width: 40%; }
+    .skeleton-line.h-20 { height: 20px; margin-bottom: 20px; }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── STATUS BANNER ── */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      font-weight: 500;
+      margin-bottom: 24px;
+      animation: fadeSlideIn .3s ease;
+    }
+
+    .status-banner.success {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid #a8e6cf;
+    }
+
+    .status-banner.warning {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border: 1px solid #f5d08a;
+    }
+
+    /* ── OUTPUT PANEL ── */
+    #output {
+      display: none;
+      animation: fadeSlideIn .4s ease;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* conflict output */
+    #output.conflict .output-header {
+      background: linear-gradient(135deg, #fff8ed, #fff3e0);
+      border-bottom: 1px solid #f5d08a;
+    }
+
+    #output.conflict .output-header-icon { color: var(--warning); }
+
+    /* success output */
+    #output.success .output-header {
+      background: linear-gradient(135deg, var(--success-bg), #d4f5e9);
+      border-bottom: 1px solid #a8e6cf;
+    }
+
+    #output.success .output-header-icon { color: var(--success); }
+
+    .output-header {
+      padding: 20px 28px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .output-header-icon { font-size: 22px; }
+
+    .output-header-text h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .output-header-text p {
+      font-size: 0.82rem;
+      color: var(--text-2);
+    }
+
+    .output-body {
+      padding: 28px 32px;
+    }
+
+    /* ── REPORT TYPOGRAPHY ── */
+    .output-body h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      color: var(--brand);
+      margin-bottom: 4px;
+      display: none; /* title already shown in header */
+    }
+
+    .output-body h2 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin: 28px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .output-body h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 16px 0 6px;
+    }
+
+    .output-body p {
+      font-size: 0.92rem;
+      line-height: 1.75;
+      color: var(--text-2);
+      margin-bottom: 12px;
+    }
+
+    .output-body ul, .output-body ol {
+      padding-left: 20px;
+      margin-bottom: 14px;
+    }
+
+    .output-body li {
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: var(--text-2);
+      margin-bottom: 6px;
+    }
+
+    .output-body strong { color: var(--text); font-weight: 600; }
+
+    .output-body em {
+      color: var(--text-3);
+      font-size: 0.85rem;
+      font-style: normal;
+    }
+
+    .output-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* conflict issues styled as cards */
+    #output.conflict .output-body strong {
+      display: block;
+      background: var(--warning-bg);
+      border: 1px solid #f5d08a;
+      border-left: 3px solid var(--warning);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      font-size: 0.88rem;
+      color: var(--text);
+      font-weight: 400;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 560px) {
+      .form-card { padding: 24px 20px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full-width { grid-column: 1; }
+      .checkbox-row { grid-column: 1; }
+      .btn-primary { grid-column: 1; }
+      .output-body { padding: 20px; }
     }
   </style>
 </head>
 <body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-mark">💍</div>
+    <span class="logo-text">Wedding Planner AI</span>
+    <span class="header-badge">AI-Powered</span>
+  </header>
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>Plan your perfect day</h1>
+    <p>Enter your event details and get a personalised, AI-generated wedding plan in seconds.</p>
+  </div>
+
   <div class="container">
-    <h1>Wedding Planner AI</h1>
-    <p class="subtitle">Enter your event details to generate a personalised planning report.</p>
 
-    <form id="planForm">
-      <div class="form-grid">
+    <!-- FORM -->
+    <div class="card form-card">
+      <p class="form-section-label">Event Details</p>
+      <form id="planForm">
+        <div class="form-grid">
 
-        <div class="field">
-          <label for="guests">Guest Count</label>
-          <input type="number" id="guests" name="guests" placeholder="e.g. 90" min="1" required />
+          <div class="field">
+            <label for="guests">Guest Count</label>
+            <div class="input-wrap">
+              <span class="input-icon">👥</span>
+              <input type="number" id="guests" name="guests" placeholder="e.g. 90" min="1" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="budget">Budget (CAD $)</label>
+            <div class="input-wrap">
+              <span class="input-icon">💰</span>
+              <input type="number" id="budget" name="budget" placeholder="e.g. 12000" min="0" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="theme">Theme</label>
+            <div class="input-wrap">
+              <span class="input-icon">🎨</span>
+              <input type="text" id="theme" name="theme" placeholder="e.g. Rustic, Garden, Modern" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="date">Event Date</label>
+            <div class="input-wrap">
+              <span class="input-icon">📅</span>
+              <input type="date" id="date" name="date" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="venue_type">Venue Type</label>
+            <div class="input-wrap">
+              <span class="input-icon">🏛️</span>
+              <select id="venue_type" name="venue_type">
+                <option value="">— Select venue type —</option>
+                <option value="indoor">Indoor</option>
+                <option value="outdoor">Outdoor</option>
+                <option value="hybrid">Hybrid (Indoor + Outdoor)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="dietary">Dietary Requirements</label>
+            <div class="input-wrap">
+              <span class="input-icon">🍽️</span>
+              <input type="text" id="dietary" name="dietary" placeholder="e.g. Vegetarian, Halal" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="field full-width">
+            <label for="email">Email Address <span style="font-weight:400;color:var(--text-3);">— optional, receive your report by email</span></label>
+            <div class="input-wrap">
+              <span class="input-icon">✉️</span>
+              <input type="email" id="email" name="email" placeholder="yourname@email.com" />
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="acknowledged" name="acknowledged" />
+            <label for="acknowledged">
+              I have reviewed any flagged conflicts and want to proceed with my current inputs.
+            </label>
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn-primary">
+            <span id="btnIcon">✨</span>
+            <span id="btnText">Generate Wedding Plan</span>
+          </button>
+
         </div>
+      </form>
+    </div>
 
-        <div class="field">
-          <label for="budget">Budget ($)</label>
-          <input type="number" id="budget" name="budget" placeholder="e.g. 12000" min="0" required />
-        </div>
-
-        <div class="field">
-          <label for="theme">Theme</label>
-          <input type="text" id="theme" name="theme" placeholder="e.g. Rustic, Garden, Modern" />
-        </div>
-
-        <div class="field">
-          <label for="date">Event Date</label>
-          <input type="date" id="date" name="date" />
-        </div>
-
-        <div class="field">
-          <label for="venue_type">Venue Type</label>
-          <select id="venue_type" name="venue_type">
-            <option value="">-- Select --</option>
-            <option value="indoor">Indoor</option>
-            <option value="outdoor">Outdoor</option>
-            <option value="hybrid">Hybrid (Indoor + Outdoor)</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="dietary">Dietary Requirements</label>
-          <input type="text" id="dietary" name="dietary" placeholder="e.g. Vegetarian, Vegan, Halal" />
-        </div>
-
-        <div class="field full-width">
-          <label for="email">Email Address <span style="font-weight:normal;text-transform:none;letter-spacing:0;color:#999;">(optional — receive your report by email)</span></label>
-          <input type="email" id="email" name="email" placeholder="e.g. yourname@email.com" />
-        </div>
-
-        <div class="checkbox-row">
-          <input type="checkbox" id="acknowledged" name="acknowledged" />
-          <label for="acknowledged" style="text-transform:none; letter-spacing:0; font-weight:normal; color:#666;">
-            I have reviewed any conflicts and want to proceed with the current inputs
-          </label>
-        </div>
-
-        <button type="submit" id="submitBtn">Generate Plan</button>
+    <!-- SKELETON LOADER -->
+    <div class="card" id="skeleton">
+      <div class="output-header" style="background:var(--bg); border-bottom:1px solid var(--border);">
+        <div class="skeleton-line w-40 h-20" style="margin:0;"></div>
       </div>
-    </form>
+      <div class="output-body">
+        <div class="skeleton-line w-60 h-20"></div>
+        <div class="skeleton-line w-80"></div>
+        <div class="skeleton-line w-80"></div>
+        <div class="skeleton-line w-60"></div>
+        <br/>
+        <div class="skeleton-line w-40 h-20"></div>
+        <div class="skeleton-line w-80"></div>
+        <div class="skeleton-line w-80"></div>
+        <div class="skeleton-line w-40"></div>
+      </div>
+    </div>
 
-    <div class="spinner" id="spinner">Generating your wedding plan...</div>
-    <div id="output"></div>
+    <!-- OUTPUT -->
+    <div class="card" id="output">
+      <div class="output-header">
+        <span class="output-header-icon" id="outputIcon"></span>
+        <div class="output-header-text">
+          <h2 id="outputTitle"></h2>
+          <p id="outputSubtitle"></p>
+        </div>
+      </div>
+      <div class="output-body" id="outputBody"></div>
+    </div>
+
   </div>
 
   <script>
-    const form = document.getElementById('planForm');
-    const output = document.getElementById('output');
-    const spinner = document.getElementById('spinner');
-    const submitBtn = document.getElementById('submitBtn');
+    const form       = document.getElementById('planForm');
+    const output     = document.getElementById('output');
+    const skeleton   = document.getElementById('skeleton');
+    const submitBtn  = document.getElementById('submitBtn');
+    const btnText    = document.getElementById('btnText');
+    const btnIcon    = document.getElementById('btnIcon');
+    const outputBody = document.getElementById('outputBody');
+
+    function setLoading(on) {
+      skeleton.style.display = on ? 'block' : 'none';
+      output.style.display   = 'none';
+      submitBtn.disabled     = on;
+      btnText.textContent    = on ? 'Generating…' : 'Generate Wedding Plan';
+      btnIcon.textContent    = on ? '⏳' : '✨';
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const params = new URLSearchParams({
-        guests:      document.getElementById('guests').value,
-        budget:      document.getElementById('budget').value,
-        theme:       document.getElementById('theme').value,
-        date:        document.getElementById('date').value,
-        venue_type:  document.getElementById('venue_type').value,
-        dietary:     document.getElementById('dietary').value,
-        email:       document.getElementById('email').value,
+        guests:       document.getElementById('guests').value,
+        budget:       document.getElementById('budget').value,
+        theme:        document.getElementById('theme').value,
+        date:         document.getElementById('date').value,
+        venue_type:   document.getElementById('venue_type').value,
+        dietary:      document.getElementById('dietary').value,
+        email:        document.getElementById('email').value,
         acknowledged: document.getElementById('acknowledged').checked ? 'true' : 'false'
       });
 
-      output.style.display = 'none';
-      output.className = '';
-      spinner.style.display = 'block';
-      submitBtn.disabled = true;
+      output.className = 'card';
+      setLoading(true);
 
       try {
-        const res = await fetch(`/plan?${params}`);
+        const res  = await fetch(`/plan?${params}`);
         const data = await res.json();
 
-        spinner.style.display = 'none';
-        submitBtn.disabled = false;
-        output.style.display = 'block';
-        output.innerHTML = marked.parse(data.report);
+        setLoading(false);
 
-        if (data.has_conflicts) {
-          output.classList.add('conflict');
-        } else {
-          output.classList.add('success');
-          if (data.emailed) {
-            const banner = document.createElement('p');
-            banner.style.cssText = 'background:#f0faf0;border:1px solid #6aaa64;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:0.9rem;color:#3a7a3a;';
-            banner.textContent = `Report sent to ${document.getElementById('email').value}`;
-            output.prepend(banner);
-          }
+        const isConflict = data.has_conflicts;
+        output.classList.add(isConflict ? 'conflict' : 'success');
+
+        // Set header
+        document.getElementById('outputIcon').textContent    = isConflict ? '⚠️' : '✅';
+        document.getElementById('outputTitle').textContent   = isConflict ? 'Action Required' : 'Your Wedding Plan is Ready';
+        document.getElementById('outputSubtitle').textContent = isConflict
+          ? 'Please resolve the following issues before your plan can be generated.'
+          : 'Review your personalised planning report below.';
+
+        // Build body
+        outputBody.innerHTML = '';
+
+        // Email confirmation banner
+        if (!isConflict && data.emailed) {
+          const emailEl = document.getElementById('email').value;
+          const banner  = document.createElement('div');
+          banner.className = 'status-banner success';
+          banner.innerHTML = `<span>📬</span><span>Report also sent to <strong>${emailEl}</strong></span>`;
+          outputBody.appendChild(banner);
         }
 
-        output.scrollIntoView({ behavior: 'smooth' });
-      } catch (err) {
-        spinner.style.display = 'none';
-        submitBtn.disabled = false;
+        // Render markdown
+        const content = document.createElement('div');
+        content.innerHTML = marked.parse(data.report);
+        outputBody.appendChild(content);
+
         output.style.display = 'block';
-        output.textContent = 'Something went wrong. Check the Flask console.';
+        output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (err) {
+        setLoading(false);
+        output.classList.add('conflict');
+        document.getElementById('outputIcon').textContent     = '❌';
+        document.getElementById('outputTitle').textContent    = 'Something went wrong';
+        document.getElementById('outputSubtitle').textContent = 'Check the Flask console for details.';
+        outputBody.innerHTML = '';
+        output.style.display = 'block';
       }
     });
   </script>

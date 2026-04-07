@@ -8,7 +8,7 @@ BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 OUTPUT_FILE = os.path.join(BASE_DIR, "outputs", "wedding_report.md")
 
 
-def build_prompt(state, retrieved_docs, conflict_summary):
+def build_prompt(state, retrieved_docs, conflict_summary, weather_context=None):
     guest_count = state.get("guest_count", "Not provided")
     budget = state.get("budget", "Not provided")
     theme = state.get("theme", "Not provided")
@@ -20,6 +20,10 @@ def build_prompt(state, retrieved_docs, conflict_summary):
         f"[Source: {doc['source']}]\n{doc['text']}" for doc in retrieved_docs
     )
 
+    weather_section = ""
+    if weather_context:
+        weather_section = f"\n## Live Weather Data (London, Ontario)\n{weather_context}\n"
+
     prompt = f"""You are a professional wedding planner assistant. Using the event details and retrieved guidance below, generate a structured wedding planning report in Markdown.
 
 ## Event Details
@@ -29,7 +33,7 @@ def build_prompt(state, retrieved_docs, conflict_summary):
 - Event Date: {date}
 - Venue Type: {venue_type}
 - Dietary Requirements: {dietary}
-
+{weather_section}
 ## Conflict Summary
 {conflict_summary}
 
@@ -38,9 +42,9 @@ def build_prompt(state, retrieved_docs, conflict_summary):
 
 ## Instructions
 Write a Markdown report with the following sections:
-1. **Event Summary** — restate the key event details
+1. **Event Summary** — restate the key event details including any live weather data if provided
 2. **Conflict Summary** — explain any conflicts detected and what they mean for planning
-3. **Planning Recommendations** — 4 to 6 specific recommendations grounded in the retrieved guidance. After each recommendation, cite the source document it came from in parentheses like this: *(Source: filename.txt)*
+3. **Planning Recommendations** — 4 to 6 specific recommendations grounded in the retrieved guidance. If live weather data is present, include a specific recommendation about outdoor weather conditions and backup planning. After each recommendation, cite the source document it came from in parentheses like this: *(Source: filename.txt)*
 4. **Suggested Next Actions** — a short checklist of 3 to 5 concrete next steps the couple should take
 
 Keep the tone helpful and professional. Be specific — reference actual numbers from the event details."""
@@ -104,8 +108,8 @@ def fallback_report(state, retrieved_docs, conflict_summary):
     return report
 
 
-def generate_markdown_report(state, retrieved_docs, conflict_summary):
-    prompt = build_prompt(state, retrieved_docs, conflict_summary)
+def generate_markdown_report(state, retrieved_docs, conflict_summary, weather_context=None):
+    prompt = build_prompt(state, retrieved_docs, conflict_summary, weather_context)
     report_body = generate_with_gemini(prompt)
 
     if report_body:

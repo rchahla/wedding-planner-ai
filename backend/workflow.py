@@ -180,7 +180,7 @@ def run_workflow(user_input):
     # Step 5: Generate structured artifact
     print("[Step 5] Generating structured planning artifact...")
     conflict_summary = "; ".join(conflicts) if conflicts else "No conflicts detected."
-    report = generate_markdown_report(state, retrieved_docs, conflict_summary)
+    report = generate_markdown_report(state, retrieved_docs, conflict_summary, weather_context)
 
     # Step 6: Email the report if an address was provided
     emailed = False
