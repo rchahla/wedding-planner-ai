@@ -1,4 +1,5 @@
 import os
+import time
 from google import genai
 from dotenv import load_dotenv
 
@@ -52,20 +53,34 @@ Keep the tone helpful and professional. Be specific — reference actual numbers
     return prompt
 
 
-def generate_with_gemini(prompt):
+def generate_with_gemini(prompt, max_retries=4):
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         return None
 
-    try:
-        client = genai.Client(api_key=api_key)
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
-        )
-        return response.text
-    except Exception as e:
-        return f"Error generating report with Gemini: {str(e)}"
+    client = genai.Client(api_key=api_key)
+
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+            return response.text
+
+        except Exception as e:
+            err = str(e)
+            is_unavailable = "503" in err or "UNAVAILABLE" in err.upper()
+
+            if is_unavailable and attempt < max_retries - 1:
+                wait = 2 ** attempt          # 1s → 2s → 4s → 8s
+                print(f"[Gemini] 503 UNAVAILABLE — retrying in {wait}s (attempt {attempt + 1}/{max_retries})")
+                time.sleep(wait)
+                continue
+
+            # Non-retryable error or out of retries
+            print(f"[Gemini] Failed after {attempt + 1} attempt(s): {err}")
+            return None
 
 
 def fallback_report(state, retrieved_docs, conflict_summary):
