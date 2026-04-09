@@ -1,5 +1,4 @@
 import os
-import time
 from google import genai
 from dotenv import load_dotenv
 
@@ -9,7 +8,7 @@ BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 OUTPUT_FILE = os.path.join(BASE_DIR, "outputs", "wedding_report.md")
 
 
-def build_prompt(state, retrieved_docs, conflict_summary, weather_context=None):
+def build_prompt(state, retrieved_docs, conflict_summary):
     guest_count = state.get("guest_count", "Not provided")
     budget = state.get("budget", "Not provided")
     theme = state.get("theme", "Not provided")
@@ -21,10 +20,6 @@ def build_prompt(state, retrieved_docs, conflict_summary, weather_context=None):
         f"[Source: {doc['source']}]\n{doc['text']}" for doc in retrieved_docs
     )
 
-    weather_section = ""
-    if weather_context:
-        weather_section = f"\n## Live Weather Data (London, Ontario)\n{weather_context}\n"
-
     prompt = f"""You are a professional wedding planner assistant. Using the event details and retrieved guidance below, generate a structured wedding planning report in Markdown.
 
 ## Event Details
@@ -34,7 +29,7 @@ def build_prompt(state, retrieved_docs, conflict_summary, weather_context=None):
 - Event Date: {date}
 - Venue Type: {venue_type}
 - Dietary Requirements: {dietary}
-{weather_section}
+
 ## Conflict Summary
 {conflict_summary}
 
@@ -43,9 +38,9 @@ def build_prompt(state, retrieved_docs, conflict_summary, weather_context=None):
 
 ## Instructions
 Write a Markdown report with the following sections:
-1. **Event Summary** — restate the key event details including any live weather data if provided
+1. **Event Summary** — restate the key event details
 2. **Conflict Summary** — explain any conflicts detected and what they mean for planning
-3. **Planning Recommendations** — 4 to 6 specific recommendations grounded in the retrieved guidance. If live weather data is present, include a specific recommendation about outdoor weather conditions and backup planning. After each recommendation, cite the source document it came from in parentheses like this: *(Source: filename.txt)*
+3. **Planning Recommendations** — 4 to 6 specific recommendations grounded in the retrieved guidance. After each recommendation, cite the source document it came from in parentheses like this: *(Source: filename.txt)*
 4. **Suggested Next Actions** — a short checklist of 3 to 5 concrete next steps the couple should take
 
 Keep the tone helpful and professional. Be specific — reference actual numbers from the event details."""
@@ -53,34 +48,20 @@ Keep the tone helpful and professional. Be specific — reference actual numbers
     return prompt
 
 
-def generate_with_gemini(prompt, max_retries=4):
+def generate_with_gemini(prompt):
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         return None
 
-    client = genai.Client(api_key=api_key)
-
-    for attempt in range(max_retries):
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt
-            )
-            return response.text
-
-        except Exception as e:
-            err = str(e)
-            is_unavailable = "503" in err or "UNAVAILABLE" in err.upper()
-
-            if is_unavailable and attempt < max_retries - 1:
-                wait = 2 ** attempt          # 1s → 2s → 4s → 8s
-                print(f"[Gemini] 503 UNAVAILABLE — retrying in {wait}s (attempt {attempt + 1}/{max_retries})")
-                time.sleep(wait)
-                continue
-
-            # Non-retryable error or out of retries
-            print(f"[Gemini] Failed after {attempt + 1} attempt(s): {err}")
-            return None
+    try:
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+        return response.text
+    except Exception as e:
+        return f"Error generating report with Gemini: {str(e)}"
 
 
 def fallback_report(state, retrieved_docs, conflict_summary):
@@ -124,14 +105,10 @@ def fallback_report(state, retrieved_docs, conflict_summary):
 
 
 def generate_markdown_report(state, retrieved_docs, conflict_summary, weather_context=None):
-    prompt = build_prompt(state, retrieved_docs, conflict_summary, weather_context)
+    prompt = build_prompt(state, retrieved_docs, conflict_summary)
     report_body = generate_with_gemini(prompt)
 
     if report_body:
-        # Strip leading title if Gemini already included it
-        stripped = report_body.lstrip()
-        if stripped.lower().startswith("# wedding planning report"):
-            report_body = stripped[stripped.index("\n"):].lstrip()
         report = f"# Wedding Planning Report\n\n{report_body}"
     else:
         report = fallback_report(state, retrieved_docs, conflict_summary)
